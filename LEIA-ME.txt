@@ -1,0 +1,64 @@
+AJUSTES NO BANCO DE HORAS - O QUE MUDOU E O QUE FAZER
+========================================================
+
+Analisei o app.py do banco de horas e comparei com o Recesso. Resumo do
+que eu mudei e do que NÃO precisou mudar:
+
+1) PORTA - NÃO PRECISOU MUDAR
+   O banco de horas já roda na porta 5000, não na 8080. Quem usa a 8080
+   é o Recesso. Como são portas diferentes, os dois já podem rodar ao
+   mesmo tempo no servidor sem conflito. Por isso eu não mexi na porta
+   (pra não arriscar quebrar nada que já está funcionando, como você
+   pediu).
+
+2) NOME DO .EXE - MUDEI
+   No app.spec, troquei o nome de saída de "app" para "appbanco".
+   Ou seja, o executável gerado vai se chamar appbanco.exe em vez de
+   app.exe. Assim ele nunca é confundido nem derrubado pelo
+   "taskkill /f /im app.exe" que o iniciar.bat do Recesso usa.
+
+3) INICIAR.BAT - MUDEI
+   Atualizei o iniciar.bat (em anexo) pra usar appbanco.exe em vez de
+   app.exe nas linhas de taskkill e start. O resto do script é
+   idêntico ao que já funcionava.
+
+4) PYTHON 3.13 x SERVIDOR (o erro PssQuerySnapshot) - PRECISA
+   RECOMPILAR
+   O app.py em si não precisou de nenhuma mudança de código pra isso -
+   o problema é só de qual Python foi usado pra gerar o .exe. Você já
+   tem o Python 3.11.9 instalado no seu computador (o mesmo que usamos
+   pra resolver isso no Recesso). É só recompilar o banco de horas com
+   ele.
+
+COMO RECOMPILAR (no SEU computador, não no servidor)
+------------------------------------------------------
+1. Copie a pasta do projeto "Banco de Horas" (com o app.py) pro seu
+   computador, se ainda não estiver lá.
+2. Troque o app.spec de dentro dessa pasta pelo app.spec que está aqui
+   junto (já com o nome "appbanco").
+3. Abra o Prompt de Comando (cmd) nessa pasta e rode, na ordem:
+
+   py -3.11 -m pip install flask flask_sqlalchemy pyinstaller
+
+   py -3.11 -m PyInstaller app.spec
+
+4. Isso vai gerar dist\appbanco.exe.
+5. Troque o iniciar.bat de dentro da pasta dist pelo iniciar.bat que
+   está aqui junto (já ajustado pro nome novo).
+
+NO SERVIDOR
+------------
+1. Copie o novo appbanco.exe e o novo iniciar.bat pra pasta do banco
+   de horas no servidor (a mesma pasta de sempre, ex:
+   ...\Banco de Horas\dist).
+2. Pode apagar o app.exe antigo dessa pasta (ou deixar, não faz mais
+   diferença - só o appbanco.exe vai ser usado agora).
+3. O banco de dados (banco_horas_profissional.db) continua no mesmo
+   lugar de sempre - não precisa mexer nele, os dados continuam lá.
+4. Se você já tinha um atalho do iniciar.bat na pasta Inicializar
+   (Shell:Startup) apontando pra esse iniciar.bat, não precisa recriar
+   o atalho - ele já vai chamar o iniciar.bat atualizado (o atalho
+   aponta pro arquivo, não pro conteúdo antigo dele).
+
+Qualquer erro que aparecer ao rodar o appbanco.exe no servidor, me
+manda um print que a gente resolve.
